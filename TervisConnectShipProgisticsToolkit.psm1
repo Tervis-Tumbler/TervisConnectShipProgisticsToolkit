@@ -36,6 +36,7 @@ function Invoke-ProgisticsProvision {
         Copy-Item -Path "\\tervis.prv\applications\Chocolatey\progistics.6.5.nupkg" -Destination $TervisConnectShipDataPathOnNode
         Install-TervisChocolateyPackage -ComputerName $Node.ComputerName -PackageName Progistics -Version 6.5 -PackageParameters "$TervisConnectShipDataPathLocal\INST.ini"
     }
+    $Nodes | Set-TervisConnectShipProgisticsLicense
 }
 
 function Set-TervisConnectShipToolkitResponseFile {
@@ -63,4 +64,19 @@ function Set-TervisConnectShipToolkitResponseFile {
         Invoke-ProcessTemplateFile |
         Out-File -Encoding utf8 -NoNewline "$TervisConnectShipDataPathOnNode\INST.ini"
     }
+}
+
+function Set-TervisConnectShipProgisticsLicense {
+    param (
+        [parameter(Mandatory,ValueFromPipelineByPropertyName)]$ComputerName
+    )
+    begin {
+        $LicenseCred = Get-PasswordstateCredential -PasswordID 3923
+    }
+    process {
+        Invoke-Command -ComputerName $ComputerName -ScriptBlock {
+            Import-Module "C:\Program Files (x86)\ConnectShip\Progistics\bin\Progistics.Management.dll"
+            Set-License -Credentials $Using:LicenseCred
+        }
+    }    
 }
