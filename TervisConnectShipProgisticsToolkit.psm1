@@ -27,9 +27,14 @@ function Invoke-ProgisticsProvision {
     )
     Invoke-ClusterApplicationProvision -ClusterApplicationName Progistics -EnvironmentName $EnvironmentName
     $Nodes = Get-TervisClusterApplicationNode -ClusterApplicationName Progistics -EnvironmentName $EnvironmentName
-    $Nodes | Set-TervisConnectShipToolkitResponseFile -ComputerName
+    $Nodes | Set-TervisConnectShipToolkitResponseFile
     Foreach ($Node in $Nodes) {
-        Install-TervisChocolateyPackage -ComputerName $Node.ComputerName -PackageName Progistics -Version 6.5 -PackageParameters "/RESPONSE=$TervisConnectShipDataPathLocal\INST.ini /ACCEPTEULA=YES"
+
+        $TervisConnectShipDataPathOnNode = $TervisConnectShipDataPathLocal | 
+        ConvertTo-RemotePath -ComputerName $Node.ComputerName
+
+        Copy-Item -Path "\\tervis.prv\applications\Chocolatey\progistics.6.5.nupkg" -Destination $TervisConnectShipDataPathOnNode
+        Install-TervisChocolateyPackage -ComputerName $Node.ComputerName -PackageName Progistics -Version 6.5 -PackageParameters "$TervisConnectShipDataPathLocal\INST.ini"
     }
 }
 
@@ -41,16 +46,18 @@ function Set-TervisConnectShipToolkitResponseFile {
     begin {
         $ConnectShipWebSite = Get-PasswordstateCredential -PasswordID 2602
 
-        $MembersAreaUser = $ConnectShipWebSite.UserName
-        $MembersAreaPassword = $ConnectShipWebSite.GetNetworkCredential().password
+        $Global:MembersAreaUser = $ConnectShipWebSite.UserName
+        $Global:MembersAreaPassword = $ConnectShipWebSite.GetNetworkCredential().password
     }
     process {
         $EnvironmentState = Get-EnvironmentState -EnvironmentName $EnvironmentName
         $ProgisticsCredential = Get-PasswordstateCredential -PasswordID $EnvironmentState.ProgisticsUserPasswordEntryID
-        $ProgisticsPassword = $ProgisticsCredential.GetNetworkCredential().password
+        $Global:ProgisticsPassword = $ProgisticsCredential.GetNetworkCredential().password
 
         $TervisConnectShipDataPathOnNode = $TervisConnectShipDataPathLocal | 
         ConvertTo-RemotePath -ComputerName $ComputerName
+        
+        New-Item -ItemType Directory -Path $TervisConnectShipDataPathOnNode -Force | Out-Null
 
         "$ModulePath\INST.ini.pstemplate" | 
         Invoke-ProcessTemplateFile |
