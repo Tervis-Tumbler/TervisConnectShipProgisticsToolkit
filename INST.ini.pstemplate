@@ -1,0 +1,21 @@
+; Global installation options
+[Options]
+InstallDir=C:\Program Files (x86)\ConnectShip
+ProgisticsPassword=$ProgisticsPassword
+InstallSQLExpress=Y
+PostInstall=Y
+PostInstallPatches=Y
+MembersAreaUser=$MembersAreaUser
+MembersAreaPassword=$MembersAreaPassword
+
+; Product install options
+[Products]
+; Server components
+ServerEndicia=Y
+ServerFedExFSMS=Y
+ServerLTL=Y
+ServerMisc=Y
+ServerUPSConsolidated=Y
+
+; Progistics AMP
+AMP=Y
