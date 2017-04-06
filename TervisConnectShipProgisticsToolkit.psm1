@@ -83,24 +83,20 @@ function Copy-TervisConnectShipConfigurationFiles {
         $Domain = Get-ADDomain
         $SourceRootPath = "\\$($Domain.DNSRoot)\Applications\GitRepository\ConnectShip\Progistics"
         $ProgisticsPath = "C:\Program Files (x86)\ConnectShip\Progistics"
-        $XMLFileProviderPath = "$ProgisticsPath\AdditionalComponents\DocumentProviders\ConnectShip\XMLFileProvider"
-        $ServerPath = "$ProgisticsPath\XML_Processor\Server"
-        $AMPServicePath = "$ProgisticsPath\AMP\AMPService"
-        $CustomScriptingPath = "$ProgisticsPath\AMP\CustomScripting"
+        $ConnectShipComponentsPath = "$ProgisticsPath\AdditionalComponents\DocumentProviders\ConnectShip"
+        $XMLProcessorPath = "$ProgisticsPath\XML_Processor"
+        $AMPPath = "$ProgisticsPath\AMP"
     }
     process {
-        $XMLFileProviderRemotePath = $XMLFileProviderPath | ConvertTo-RemotePath -ComputerName $ComputerName
-        $ServerRemotePath = $ServerPath | ConvertTo-RemotePath -ComputerName $ComputerName
-        $AMPServiceRemotePath = $AMPServicePath | ConvertTo-RemotePath -ComputerName $ComputerName
-        $CustomScriptingRemotePath = $CustomScriptingPath | ConvertTo-RemotePath -ComputerName $ComputerName
-        Copy-Item -Path $SourceRootPath\XMLFileProvider -Destination $XMLFileProviderRemotePath -Recurse -Force 
-        Copy-Item -Path $SourceRootPath\Server -Destination $ServerRemotePath -Recurse -Force
-        Copy-Item -Path $SourceRootPath\AMPService -Destination $AMPServiceRemotePath -Recurse -Force        
-        # New-Item -ItemType Directory -Path $CustomScriptingRemotePath -Force | Out-Null
-        Copy-Item -Path $SourceRootPath\CustomScripting -Destination $CustomScriptingRemotePath -Recurse -Force
+        $ConnectShipComponentsRemotePath = $ConnectShipComponentsPath | ConvertTo-RemotePath -ComputerName $ComputerName
+        $XMLProcessorRemotePath = $XMLProcessorPath | ConvertTo-RemotePath -ComputerName $ComputerName
+        $AMPRemotePath = $AMPPath | ConvertTo-RemotePath -ComputerName $ComputerName        
+        Copy-Item -Path $SourceRootPath\XMLFileProvider -Destination $ConnectShipComponentsRemotePath -Recurse -Force 
+        Copy-Item -Path $SourceRootPath\Server -Destination $XMLProcessorRemotePath -Recurse -Force
+        Copy-Item -Path $SourceRootPath\AMPService -Destination $AMPRemotePath -Recurse -Force                
+        Copy-Item -Path $SourceRootPath\CustomScripting -Destination $AMPRemotePath -Recurse -Force
     }
-}
-function Install-TervisConnectShipProgistics {
+}function Install-TervisConnectShipProgistics {
     param (
         [parameter(Mandatory,ValueFromPipelineByPropertyName)]$ComputerName
     )
