@@ -17,5 +17,30 @@ ServerLTL=Y
 ServerMisc=Y
 ServerUPSConsolidated=Y
 
+; Device components
+DeviceDatamax=Y
+DeviceDetecto=Y
+DeviceFairbanks=Y
+DeviceFlexWeigh=Y
+DeviceGenericEpson=Y
+DeviceGenericScanner=Y
+DeviceGSE=Y
+DeviceIntermec=Y
+DeviceMettlerToledo=Y
+DeviceMonarch=Y
+DeviceNCI=Y
+DevicePCL=Y
+DevicePostScript=Y
+DeviceOkidata=Y
+DeviceSamsung=Y
+DeviceSato=Y
+DeviceSetra=Y
+DeviceStar=Y
+DeviceToshiba=Y
+DeviceUSBScale=Y
+DeviceUSBScanner=Y
+DeviceWindows=Y
+DeviceZebra=Y
+
 ; Progistics AMP
 AMP=Y

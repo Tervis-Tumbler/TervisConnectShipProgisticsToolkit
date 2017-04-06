@@ -18,7 +18,7 @@ function Get-EnvironmentState {
     param (
         [Parameter(Mandatory)]$EnvironmentName
     )
-    $EnvironmentState | where EnvironmentName -eq $EnvironmentName
+    $Script:EnvironmentState | where EnvironmentName -eq $EnvironmentName
 }
 
 function Invoke-ProgisticsProvision {
