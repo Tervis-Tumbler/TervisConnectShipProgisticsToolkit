@@ -86,9 +86,9 @@ function Install-TervisConnectShipProgistics {
     process {
         $TervisConnectShipDataPathOnNode = $TervisConnectShipDataPathLocal | 
         ConvertTo-RemotePath -ComputerName $ComputerName
-        if (Test-Path -Path $TervisConnectShipDataPathOnNode\progistics.6.5.nupkg) {            
+        if (-not (Test-Path -Path $TervisConnectShipDataPathOnNode\progistics.6.5.nupkg)) {            
             Copy-Item -Path $ProgisticsPackageFilePath -Destination $TervisConnectShipDataPathOnNode
         }
-        Install-TervisChocolateyPackage -ComputerName $ComputerName -PackageName Progistics -Version 6.5 -PackageParameters "$TervisConnectShipDataPathLocal\INST.ini" -Source $TervisConnectShipDataPathOnNode
+        Install-TervisChocolateyPackage -ComputerName $ComputerName -PackageName Progistics -Version 6.5 -PackageParameters "$TervisConnectShipDataPathLocal\INST.ini" -Source $TervisConnectShipDataPathLocal
     }    
 }
