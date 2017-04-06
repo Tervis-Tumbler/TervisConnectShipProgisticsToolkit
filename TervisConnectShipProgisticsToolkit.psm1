@@ -29,14 +29,7 @@ function Invoke-ProgisticsProvision {
     $Nodes = Get-TervisClusterApplicationNode -ClusterApplicationName Progistics -EnvironmentName $EnvironmentName
     $Nodes | Add-WCSODBCDSN -ODBCDSNTemplateName Tervis
     $Nodes | Set-TervisConnectShipToolkitResponseFile
-    Foreach ($Node in $Nodes) {
-        $TervisConnectShipDataPathOnNode = $TervisConnectShipDataPathLocal | 
-        ConvertTo-RemotePath -ComputerName $Node.ComputerName
-
-        $ADDomain = Get-ADDomain
-        Copy-Item -Path "\\$($ADDomain.DNSRoot)\applications\Chocolatey\progistics.6.5.nupkg" -Destination $TervisConnectShipDataPathOnNode
-        Install-TervisChocolateyPackage -ComputerName $Node.ComputerName -PackageName Progistics -Version 6.5 -PackageParameters "$TervisConnectShipDataPathLocal\INST.ini" -Source $TervisConnectShipDataPathOnNode
-    }
+    $Nodes | Install-TervisConnectShipProgistics
     $Nodes | Set-TervisConnectShipProgisticsLicense
 }
 
@@ -79,5 +72,23 @@ function Set-TervisConnectShipProgisticsLicense {
             Import-Module "C:\Program Files (x86)\ConnectShip\Progistics\bin\Progistics.Management.dll"
             Set-License -Credentials $Using:LicenseCred
         }
+    }    
+}
+
+function Install-TervisConnectShipProgistics {
+    param (
+        [parameter(Mandatory,ValueFromPipelineByPropertyName)]$ComputerName
+    )
+    begin {
+        $ADDomain = Get-ADDomain
+        $ProgisticsPackageFilePath = "\\$($ADDomain.DNSRoot)\applications\Chocolatey\progistics.6.5.nupkg"
+    }
+    process {
+        $TervisConnectShipDataPathOnNode = $TervisConnectShipDataPathLocal | 
+        ConvertTo-RemotePath -ComputerName $ComputerName
+        if (Test-Path -Path $TervisConnectShipDataPathOnNode\progistics.6.5.nupkg) {            
+            Copy-Item -Path $ProgisticsPackageFilePath -Destination $TervisConnectShipDataPathOnNode
+        }
+        Install-TervisChocolateyPackage -ComputerName $ComputerName -PackageName Progistics -Version 6.5 -PackageParameters "$TervisConnectShipDataPathLocal\INST.ini" -Source $TervisConnectShipDataPathOnNode
     }    
 }
