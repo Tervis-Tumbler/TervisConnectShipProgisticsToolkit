@@ -30,12 +30,12 @@ function Invoke-ProgisticsProvision {
     $Nodes | Add-WCSODBCDSN -ODBCDSNTemplateName Tervis
     $Nodes | Set-TervisConnectShipToolkitResponseFile
     Foreach ($Node in $Nodes) {
-
         $TervisConnectShipDataPathOnNode = $TervisConnectShipDataPathLocal | 
         ConvertTo-RemotePath -ComputerName $Node.ComputerName
 
-        Copy-Item -Path "\\tervis.prv\applications\Chocolatey\progistics.6.5.nupkg" -Destination $TervisConnectShipDataPathOnNode
-        Install-TervisChocolateyPackage -ComputerName $Node.ComputerName -PackageName Progistics -Version 6.5 -PackageParameters "$TervisConnectShipDataPathLocal\INST.ini"
+        $ADDomain = Get-ADDomain
+        Copy-Item -Path "\\$($ADDomain.DNSRoot)\applications\Chocolatey\progistics.6.5.nupkg" -Destination $TervisConnectShipDataPathOnNode
+        Install-TervisChocolateyPackage -ComputerName $Node.ComputerName -PackageName Progistics -Version 6.5 -PackageParameters "$TervisConnectShipDataPathLocal\INST.ini" -Source $TervisConnectShipDataPathOnNode
     }
     $Nodes | Set-TervisConnectShipProgisticsLicense
 }
