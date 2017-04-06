@@ -31,6 +31,7 @@ function Invoke-ProgisticsProvision {
     $Nodes | Set-TervisConnectShipToolkitResponseFile
     $Nodes | Install-TervisConnectShipProgistics
     $Nodes | Set-TervisConnectShipProgisticsLicense
+    $Nodes | Copy-TervisConnectShipConfigurationFiles
 }
 
 function Set-TervisConnectShipToolkitResponseFile {
@@ -96,7 +97,9 @@ function Copy-TervisConnectShipConfigurationFiles {
         Copy-Item -Path $SourceRootPath\AMPService -Destination $AMPRemotePath -Recurse -Force                
         Copy-Item -Path $SourceRootPath\CustomScripting -Destination $AMPRemotePath -Recurse -Force
     }
-}function Install-TervisConnectShipProgistics {
+}
+
+function Install-TervisConnectShipProgistics {
     param (
         [parameter(Mandatory,ValueFromPipelineByPropertyName)]$ComputerName
     )
