@@ -116,3 +116,33 @@ function Install-TervisConnectShipProgistics {
         Install-TervisChocolateyPackage -ComputerName $ComputerName -PackageName Progistics -Version 6.5 -PackageParameters "$TervisConnectShipDataPathLocal\INST.ini" -Source $TervisConnectShipDataPathLocal
     }    
 }
+
+function Get-TervisConnectShipProgisticsControllerConfigurationData {
+    param(
+        
+    )
+    $QueryResponse = Invoke-SQL -dataSource $DataSource -database $Database -sqlCommand @"
+SELECT MAX(MSN)
+    FROM packageList
+
+SELECT MAX(bundleId)
+    FROM packageList
+
+SELECT MAX(pkgListId)
+    FROM packageList
+
+SELECT MAX(groupId)
+    FROM groupList
+
+SELECT MAX(shipperId)
+    FROM packageList
+"@
+
+    [PSCustomObject][Ordered]@{
+        MSN = $QueryResponse[0].Column1
+        bundleId = $QueryResponse[1].Column1
+        pkgListId = $QueryResponse[2].Column1
+        groupId = $QueryResponse[3].Column1
+        shipperId = $QueryResponse[4].Column1
+    }
+}
