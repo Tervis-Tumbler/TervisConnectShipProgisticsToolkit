@@ -149,4 +149,16 @@ SELECT MAX(shipperId)
     }
 }
 
-
+function Set-TervisConnectShipProgisticsControllerConfigurationDataMSN {
+    param (
+        [Parameter(Mandatory,ValueFromPipeline)]$ComputerName,
+        [Parameter(Mandatory)]$MSN
+    )
+    process {
+        Invoke-SQL -dataSource $ComputerName -database CSI_CONTROLLER_CONFIG -sqlCommand @"
+UPDATE [CSI_CONTROLLER_CONFIG].[dbo].[controller_sequences]
+SET sequenceValue = $MSN
+WHERE sequenceId = 1
+"@
+    }
+}
