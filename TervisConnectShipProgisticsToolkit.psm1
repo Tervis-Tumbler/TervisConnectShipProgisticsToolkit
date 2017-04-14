@@ -119,9 +119,11 @@ function Install-TervisConnectShipProgistics {
 
 function Get-TervisConnectShipProgisticsControllerConfigurationData {
     param(
-        
+        [Parameter(Mandatory,ValueFromPipelineByPropertyName)]$ComputerName,
+        $Database
     )
-    $QueryResponse = Invoke-SQL -dataSource $DataSource -database $Database -sqlCommand @"
+    process {
+        $QueryResponse = Invoke-SQL -dataSource $ComputerName -database $Database -sqlCommand @"
 SELECT MAX(MSN)
     FROM packageList
 
@@ -137,12 +139,14 @@ SELECT MAX(groupId)
 SELECT MAX(shipperId)
     FROM packageList
 "@
-
-    [PSCustomObject][Ordered]@{
-        MSN = $QueryResponse[0].Column1
-        bundleId = $QueryResponse[1].Column1
-        pkgListId = $QueryResponse[2].Column1
-        groupId = $QueryResponse[3].Column1
-        shipperId = $QueryResponse[4].Column1
+        [PSCustomObject][Ordered]@{
+            MSN = $QueryResponse[0].Column1
+            bundleId = $QueryResponse[1].Column1
+            pkgListId = $QueryResponse[2].Column1
+            groupId = $QueryResponse[3].Column1
+            shipperId = $QueryResponse[4].Column1
+        }
     }
 }
+
+
