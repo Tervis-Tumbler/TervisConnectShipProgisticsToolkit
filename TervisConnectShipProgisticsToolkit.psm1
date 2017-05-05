@@ -32,6 +32,7 @@ function Invoke-ProgisticsProvision {
     $Nodes | Install-TervisConnectShipProgistics
     $Nodes | Set-TervisConnectShipProgisticsLicense
     $Nodes | Copy-TervisConnectShipConfigurationFiles
+    $Nodes | Install-TervisConnectShipProgisticsScheduledTasks
 }
 
 function Set-TervisConnectShipToolkitResponseFile {
@@ -115,6 +116,21 @@ function Install-TervisConnectShipProgistics {
         }
         Install-TervisChocolateyPackage -ComputerName $ComputerName -PackageName Progistics -Version 6.5 -PackageParameters "$TervisConnectShipDataPathLocal\INST.ini" -Source $TervisConnectShipDataPathLocal
     }    
+}
+
+function Install-TervisConnectShipProgisticsScheduledTasks {
+    param (
+        [Parameter(Mandatory,ValueFromPipelineByPropertyName)]$ComputerName,
+        [Parameter(Mandatory,ValueFromPipelineByPropertyName)]$EnvironmentName
+    )
+    begin {
+        $SystemCredential = New-Object System.Management.Automation.PSCredential ('System',(New-Object System.Security.SecureString))
+    }
+    process {
+        $DomainName = Get-DomainName -ComputerName $ComputerName
+        $Execute = "\\WCSJavaApplication.$EnvironmentName.$DomainName\QcSoftware\Bin\transapi_cleanup.vbs"
+        Install-TervisScheduledTask -Credential $SystemCredential -TaskName TransAPI_Cleanup -Execute $Execute -RepetitionIntervalName EveryDayAt2am -ComputerName $ComputerName
+    }
 }
 
 function Get-TervisConnectShipProgisticsControllerConfigurationData {
