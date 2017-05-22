@@ -182,7 +182,6 @@ WHERE sequenceId = 1
     }
 }
 
-
 function Set-ProgisticsMSNToHigherThanWCSSybaseConnectShipMSNPreviouslyUsed {
     param (
         [Parameter(Mandatory, ValueFromPipelineByPropertyName)]$ComputerName,
