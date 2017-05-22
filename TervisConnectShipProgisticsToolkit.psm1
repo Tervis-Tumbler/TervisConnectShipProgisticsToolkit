@@ -181,3 +181,15 @@ WHERE sequenceId = 1
 "@
     }
 }
+
+
+function Set-ProgisticsMSNToHigherThanWCSSybaseConnectShipMSNPreviouslyUsed {
+    param (
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName)]$ComputerName,
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName)]$EnvironmentName
+    )
+    process {
+        $MSNMax = Get-WCSSQLConnectShipShipmentMSNMax -EnvironmentName $EnvironmentName
+        Set-TervisConnectShipProgisticsControllerConfigurationDataMSN -ComputerName $ComputerName -MSN $MSNMax
+    }
+}
