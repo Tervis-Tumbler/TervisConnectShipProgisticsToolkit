@@ -272,3 +272,10 @@ function Compare-ProgisticsObject {
         Compare-Object -ReferenceObject $Reference -DifferenceObject $Difference -IncludeEqual:$IncludeEqual
     }
 }
+
+function Set-ProgisticsSmartPostSettings {
+    Set-ShipperConfiguration -ShipperSymbol tervis -CarrierSymbol TANDATA_FEDEXFSMS.fedex -Field SP_ENABLED -Value $true
+    $FedexSmartPostAccountNumber = (Get-PasswordstateCredential -PasswordID 4347).GetNetworkCredential().Password
+    Set-ShipperConfiguration -ShipperSymbol tervis -CarrierSymbol TANDATA_FEDEXFSMS.fedex -Field SP_ACCOUNT -Value $FedexSmartPostAccountNumber
+    Set-ShipperConfiguration -ShipperSymbol tervis -CarrierSymbol TANDATA_FEDEXFSMS.fedex -Field SP_CARRIER -Value 1
+}
