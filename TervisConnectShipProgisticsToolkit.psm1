@@ -192,3 +192,83 @@ function Set-ProgisticsMSNToHigherThanWCSSybaseConnectShipMSNPreviouslyUsed {
         Set-TervisConnectShipProgisticsControllerConfigurationDataMSN -ComputerName $ComputerName -MSN $MSNMax
     }
 }
+
+function Import-ProgisticsManagementModule {
+    param (
+        $ComputerName,
+        $Prefix
+    )
+    $Session = New-PSSession -ComputerName $ComputerName
+    Invoke-Command -Session $Session -ScriptBlock { ipmo -force "C:\Program Files (x86)\ConnectShip\Progistics\bin\Progistics.Management.dll" }
+
+    if ($Prefix) {
+        Import-module (Import-PSSession -Session $Session -Module Progistics.Management -DisableNameChecking -AllowClobber) -Global -Prefix $Prefix
+    } else {
+        Import-module (Import-PSSession -Session $Session -Module Progistics.Management -DisableNameChecking -AllowClobber) -Global
+    }
+}
+
+function Compare-ProgisticsConfiguration {
+    param (
+        [Parameter(Mandatory)]$ReferenceComputerName,
+        [Parameter(Mandatory)]$DifferenceComputerName
+    )
+    Import-ProgisticsManagementModule -ComputerName $ReferenceComputerName -Prefix Reference
+    Import-ProgisticsManagementModule -ComputerName $DifferenceComputerName -Prefix Difference
+    
+    $ProgisticsObjectNounsForSimpleComparison = @"
+Carrier
+Country
+EventHandler
+License
+ServerComponent
+Service
+Shipper
+TransAPIField
+Update
+Version
+"@ -split "`r`n"
+    $ProgisticsObjectNounsForSimpleComparison | Compare-ProgisticsObject
+
+$ProgisticsObjectNounsForShipperComparison = @"
+ShipperConfiguration
+ShipperControl
+"@ -split "`r`n"
+ 
+    $ReferenceShipper = Get-ReferenceShipper
+    foreach ($Shipper in $ReferenceShipper) {
+        foreach ($CarrierSymbol in $Shipper.RegisteredCarriers) {
+            $ProgisticsObjectNounsForShipperComparison  | 
+            Compare-ProgisticsObjectRequiringShipperSymbolAndCarrierSymbol -ShipperSymbol $Shipper.ShipperSymbol -CarrierSymbol $CarrierSymbol
+        }
+    }
+
+#NameAddressCandidate
+}
+
+function Compare-ProgisticsObjectRequiringShipperSymbolAndCarrierSymbol {
+    param (
+        [Parameter(Mandatory,ValueFromPipeline)]$Noun,
+        [Parameter(Mandatory)]$ShipperSymbol,
+        [Parameter(Mandatory)]$CarrierSymbol,
+        [Switch]$IncludeEqual
+    )
+    process {
+        $Reference = Invoke-Expression "Get-Reference$Noun -ShipperSymbol $ShipperSymbol -CarrierSymbol $CarrierSymbol"
+        $Difference = Invoke-Expression "Get-Difference$Noun -ShipperSymbol $ShipperSymbol -CarrierSymbol $CarrierSymbol"
+        Compare-Object -ReferenceObject $Reference -DifferenceObject $Difference -IncludeEqual:$IncludeEqual -Property Symbol, Data
+    }
+
+}
+
+function Compare-ProgisticsObject {
+    param (
+        [Parameter(Mandatory,ValueFromPipeline)]$Noun,
+        [Switch]$IncludeEqual
+    )
+    process {
+        $Reference = Invoke-Expression "Get-Reference$Noun"
+        $Difference = Invoke-Expression "Get-Difference$Noun"
+        Compare-Object -ReferenceObject $Reference -DifferenceObject $Difference -IncludeEqual:$IncludeEqual
+    }
+}
