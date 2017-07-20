@@ -32,6 +32,7 @@ function Invoke-ProgisticsProvision {
     $Nodes | Install-TervisConnectShipProgistics
     $Nodes | Set-TervisConnectShipProgisticsLicense
     $Nodes | Copy-TervisConnectShipConfigurationFiles
+    $Nodes | Set-ProgisticsSmartPostSettings
     $Nodes | Install-TervisConnectShipProgisticsScheduledTasks
     $Nodes | Set-SQLTCPEnabled -InstanceName CSI_Data -Architecture x86
     $Nodes | Set-SQLTCPIPAllTcpPort -InstanceName CSI_Data -Architecture x86
@@ -274,8 +275,14 @@ function Compare-ProgisticsObject {
 }
 
 function Set-ProgisticsSmartPostSettings {
-    Set-ShipperConfiguration -ShipperSymbol tervis -CarrierSymbol TANDATA_FEDEXFSMS.fedex -Field SP_ENABLED -Value $true
-    $FedexSmartPostAccountNumber = (Get-PasswordstateCredential -PasswordID 4347).GetNetworkCredential().Password
-    Set-ShipperConfiguration -ShipperSymbol tervis -CarrierSymbol TANDATA_FEDEXFSMS.fedex -Field SP_ACCOUNT -Value $FedexSmartPostAccountNumber
-    Set-ShipperConfiguration -ShipperSymbol tervis -CarrierSymbol TANDATA_FEDEXFSMS.fedex -Field SP_CARRIER -Value 1
+    param (
+        [Parameter(Mandatory,ValueFromPipelineByPropertyName)]$ComputerName
+    )
+    process {
+        Import-ProgisticsManagementModule -ComputerName $ComputerName
+        Set-ShipperConfiguration -ShipperSymbol tervis -CarrierSymbol TANDATA_FEDEXFSMS.fedex -Field SP_ENABLED -Value $true
+        $FedexSmartPostAccountNumber = (Get-PasswordstateCredential -PasswordID 4347).GetNetworkCredential().Password
+        Set-ShipperConfiguration -ShipperSymbol tervis -CarrierSymbol TANDATA_FEDEXFSMS.fedex -Field SP_ACCOUNT -Value $FedexSmartPostAccountNumber
+        Set-ShipperConfiguration -ShipperSymbol tervis -CarrierSymbol TANDATA_FEDEXFSMS.fedex -Field SP_CARRIER -Value 1
+    }
 }
