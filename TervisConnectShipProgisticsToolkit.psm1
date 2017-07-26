@@ -25,8 +25,8 @@ function Invoke-ProgisticsProvision {
     param (
         $EnvironmentName
     )
-    Invoke-ClusterApplicationProvision -ClusterApplicationName Progistics -EnvironmentName $EnvironmentName
-    $Nodes = Get-TervisClusterApplicationNode -ClusterApplicationName Progistics -EnvironmentName $EnvironmentName
+    Invoke-ApplicationProvision -ApplicationName Progistics -EnvironmentName $EnvironmentName
+    $Nodes = Get-TervisApplicationNode -ApplicationName Progistics -EnvironmentName $EnvironmentName
     $Nodes | Add-WCSODBCDSN -ODBCDSNTemplateName Tervis
     $Nodes | Set-TervisConnectShipToolkitResponseFile
     $Nodes | Install-TervisConnectShipProgistics
