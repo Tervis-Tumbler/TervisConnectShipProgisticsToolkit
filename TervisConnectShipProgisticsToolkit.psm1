@@ -37,6 +37,7 @@ function Invoke-ProgisticsProvision {
     $Nodes | Set-SQLTCPEnabled -InstanceName CSI_Data -Architecture x86
     $Nodes | Set-SQLTCPIPAllTcpPort -InstanceName CSI_Data -Architecture x86
     $Nodes | New-SQLNetFirewallRule
+    $Nodes | Set-SQLSecurityBuiltInAdministratorsWithSysman
 }
 
 function Set-TervisConnectShipToolkitResponseFile {
