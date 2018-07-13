@@ -46,14 +46,14 @@ function Set-TervisConnectShipToolkitResponseFile {
         [Parameter(ValueFromPipelineByPropertyName)]$EnvironmentName
     )
     begin {
-        $ConnectShipWebSite = Get-PasswordstateCredential -PasswordID 2602
+        $ConnectShipWebSite = Get-PasswordstatePassword -AsCredential -ID 2602
 
         $Global:MembersAreaUser = $ConnectShipWebSite.UserName
         $Global:MembersAreaPassword = $ConnectShipWebSite.GetNetworkCredential().password
     }
     process {
         $EnvironmentState = Get-EnvironmentState -EnvironmentName $EnvironmentName
-        $ProgisticsCredential = Get-PasswordstateCredential -PasswordID $EnvironmentState.ProgisticsUserPasswordEntryID
+        $ProgisticsCredential = Get-PasswordstatePassword -AsCredential -ID $EnvironmentState.ProgisticsUserPasswordEntryID
         $Global:ProgisticsPassword = $ProgisticsCredential.GetNetworkCredential().password
 
         $TervisConnectShipDataPathOnNode = $TervisConnectShipDataPathLocal | 
@@ -72,7 +72,7 @@ function Set-TervisConnectShipProgisticsLicense {
         [parameter(Mandatory,ValueFromPipelineByPropertyName)]$ComputerName
     )
     begin {
-        $LicenseCred = Get-PasswordstateCredential -PasswordID 3923
+        $LicenseCred = Get-PasswordstatePassword -AsCredential -ID 3923
     }
     process {
         Invoke-Command -ComputerName $ComputerName -ScriptBlock {
@@ -282,7 +282,7 @@ function Set-ProgisticsSmartPostSettings {
     process {
         Import-ProgisticsManagementModule -ComputerName $ComputerName
         Set-ShipperConfiguration -ShipperSymbol tervis -CarrierSymbol TANDATA_FEDEXFSMS.fedex -Field SP_ENABLED -Value $true
-        $FedexSmartPostAccountNumber = (Get-PasswordstateCredential -PasswordID 4347).GetNetworkCredential().Password
+        $FedexSmartPostAccountNumber = (Get-PasswordstatePassword -ID 4347).Password
         Set-ShipperConfiguration -ShipperSymbol tervis -CarrierSymbol TANDATA_FEDEXFSMS.fedex -Field SP_ACCOUNT -Value $FedexSmartPostAccountNumber
         Set-ShipperConfiguration -ShipperSymbol tervis -CarrierSymbol TANDATA_FEDEXFSMS.fedex -Field SP_CARRIER -Value 1
     }
