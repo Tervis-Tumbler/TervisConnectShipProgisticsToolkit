@@ -48,21 +48,25 @@ function Set-TervisConnectShipToolkitResponseFile {
     begin {
         $ConnectShipWebSite = Get-PasswordstatePassword -AsCredential -ID 2602
 
-        $Global:MembersAreaUser = $ConnectShipWebSite.UserName
-        $Global:MembersAreaPassword = $ConnectShipWebSite.GetNetworkCredential().password
+        $MembersAreaUser = $ConnectShipWebSite.UserName
+        $MembersAreaPassword = $ConnectShipWebSite.GetNetworkCredential().password
     }
     process {
         $EnvironmentState = Get-EnvironmentState -EnvironmentName $EnvironmentName
-        $ProgisticsCredential = Get-PasswordstatePassword -AsCredential -ID $EnvironmentState.ProgisticsUserPasswordEntryID
-        $Global:ProgisticsPassword = $ProgisticsCredential.GetNetworkCredential().password
+        $ProgisticsPassword = Get-PasswordstatePassword -ID $EnvironmentState.ProgisticsUserPasswordEntryID |
+        Select-Object -ExpandProperty Password
 
-        $TervisConnectShipDataPathOnNode = $TervisConnectShipDataPathLocal | 
+        $TervisConnectShipDataPathOnNode = $TervisConnectShipDataPathLocal |
         ConvertTo-RemotePath -ComputerName $ComputerName
-        
+
         New-Item -ItemType Directory -Path $TervisConnectShipDataPathOnNode -Force | Out-Null
 
-        "$ModulePath\INST.ini.pstemplate" | 
-        Invoke-ProcessTemplateFile |
+        "$ModulePath\INST.ini.pstemplate" |
+        Invoke-ProcessTemplateFile -TemplateVariables @{
+            MembersAreaUser = $MembersAreaUser
+            MembersAreaPassword = $MembersAreaPassword
+            ProgisticsPassword = $ProgisticsPassword
+        } |
         Out-File -Encoding utf8 -NoNewline "$TervisConnectShipDataPathOnNode\INST.ini"
     }
 }
@@ -79,7 +83,7 @@ function Set-TervisConnectShipProgisticsLicense {
             Import-Module "C:\Program Files (x86)\ConnectShip\Progistics\bin\Progistics.Management.dll"
             Set-License -Credentials $Using:LicenseCred
         }
-    }    
+    }
 }
 
 function Copy-TervisConnectShipConfigurationFiles {
@@ -97,10 +101,10 @@ function Copy-TervisConnectShipConfigurationFiles {
     process {
         $ConnectShipComponentsRemotePath = $ConnectShipComponentsPath | ConvertTo-RemotePath -ComputerName $ComputerName
         $XMLProcessorRemotePath = $XMLProcessorPath | ConvertTo-RemotePath -ComputerName $ComputerName
-        $AMPRemotePath = $AMPPath | ConvertTo-RemotePath -ComputerName $ComputerName        
-        Copy-Item -Path $SourceRootPath\XMLFileProvider -Destination $ConnectShipComponentsRemotePath -Recurse -Force 
+        $AMPRemotePath = $AMPPath | ConvertTo-RemotePath -ComputerName $ComputerName
+        Copy-Item -Path $SourceRootPath\XMLFileProvider -Destination $ConnectShipComponentsRemotePath -Recurse -Force
         Copy-Item -Path $SourceRootPath\Server -Destination $XMLProcessorRemotePath -Recurse -Force
-        Copy-Item -Path $SourceRootPath\AMPService -Destination $AMPRemotePath -Recurse -Force                
+        Copy-Item -Path $SourceRootPath\AMPService -Destination $AMPRemotePath -Recurse -Force
         Copy-Item -Path $SourceRootPath\CustomScripting -Destination $AMPRemotePath -Recurse -Force
     }
 }
@@ -114,13 +118,13 @@ function Install-TervisConnectShipProgistics {
         $ProgisticsPackageFilePath = "\\$($ADDomain.DNSRoot)\applications\Chocolatey\progistics.6.5.nupkg"
     }
     process {
-        $TervisConnectShipDataPathOnNode = $TervisConnectShipDataPathLocal | 
+        $TervisConnectShipDataPathOnNode = $TervisConnectShipDataPathLocal |
         ConvertTo-RemotePath -ComputerName $ComputerName
-        if (-not (Test-Path -Path $TervisConnectShipDataPathOnNode\progistics.6.5.nupkg)) {            
+        if (-not (Test-Path -Path $TervisConnectShipDataPathOnNode\progistics.6.5.nupkg)) {
             Copy-Item -Path $ProgisticsPackageFilePath -Destination $TervisConnectShipDataPathOnNode
         }
         Install-TervisChocolateyPackage -ComputerName $ComputerName -PackageName Progistics -Version 6.5 -PackageParameters "$TervisConnectShipDataPathLocal\INST.ini" -Source $TervisConnectShipDataPathLocal
-    }    
+    }
 }
 
 function Install-TervisConnectShipProgisticsScheduledTasks {
@@ -217,7 +221,7 @@ function Compare-ProgisticsConfiguration {
     )
     Import-ProgisticsManagementModule -ComputerName $ReferenceComputerName -Prefix Reference
     Import-ProgisticsManagementModule -ComputerName $DifferenceComputerName -Prefix Difference
-    
+
     $ProgisticsObjectNounsForSimpleComparison = @"
 Carrier
 Country
