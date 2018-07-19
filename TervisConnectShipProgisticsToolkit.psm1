@@ -38,6 +38,7 @@ function Invoke-ProgisticsProvision {
     $Nodes | Set-SQLTCPIPAllTcpPort -InstanceName CSI_Data -Architecture x86
     $Nodes | New-SQLNetFirewallRule
     $Nodes | Set-SQLSecurityBuiltInAdministratorsWithSysman
+    $Nodes | Set-ProgisticsIISAppPoolIdentity
 }
 
 function Set-TervisConnectShipToolkitResponseFile {
@@ -289,5 +290,28 @@ function Set-ProgisticsSmartPostSettings {
         $FedexSmartPostAccountNumber = (Get-PasswordstatePassword -ID 4347).Password
         Set-ShipperConfiguration -ShipperSymbol tervis -CarrierSymbol TANDATA_FEDEXFSMS.fedex -Field SP_ACCOUNT -Value $FedexSmartPostAccountNumber
         Set-ShipperConfiguration -ShipperSymbol tervis -CarrierSymbol TANDATA_FEDEXFSMS.fedex -Field SP_CARRIER -Value 1
+    }
+}
+
+function Set-ProgisticsIISAppPoolIdentity {
+    param (
+        [Parameter(ValueFromPipelineByPropertyName)]$ComputerName,
+        [Parameter(ValueFromPipelineByPropertyName)]$EnvironmentName
+    )
+    process {
+        $EnvironmentState = Get-EnvironmentState -EnvironmentName $EnvironmentName
+        $ProgisticsPassword = Get-PasswordstatePassword -ID $EnvironmentState.ProgisticsUserPasswordEntryID
+
+        Invoke-Command -ComputerName $ComputerName -ScriptBlock {
+            Import-Module WebAdministration
+            Set-ItemProperty IIS:\AppPools\ProgisticsAppPool -name processModel -value @{
+                UserName = $Using:ProgisticsPassword.UserName
+                Password = $Using:ProgisticsPassword.Password
+                IdentityType = 3
+            }
+
+            #https://docs.microsoft.com/en-us/iis/web-hosting/web-server-for-shared-hosting/application-pool-identity-as-anonymous-user
+            Set-WebConfigurationProperty -filter /system.WebServer/security/authentication/AnonymousAuthentication -location "Default Web Site/Progistics" -Name userName -value ""
+        }
     }
 }
